@@ -1,0 +1,13 @@
+syntax = "proto3"; 
+package akit.errors;
+
+option go_package = "status";
+
+import "google/protobuf/any.proto";
+
+message Errors {
+    int32 code = 1;
+    string message = 2;
+    string Reason = 3;
+    repeated google.protobuf.Any details = 4;
+}

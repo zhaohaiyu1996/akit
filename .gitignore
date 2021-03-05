@@ -17,5 +17,5 @@
 # vendor/
 
 .idea
-vscode
+.vscode
 example

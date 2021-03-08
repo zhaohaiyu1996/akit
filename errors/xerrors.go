@@ -82,3 +82,9 @@ func Is(err error, statusErr *StatusError) bool {
 	}
 	return false
 }
+
+// set message return error
+func ErrorByMessage(e *StatusError,format string, a ...interface{}) error {
+	e.Message = fmt.Sprintf(format, a...)
+	return e
+}

@@ -8,10 +8,32 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func NewRateLimitMiddleware(l ratelimit.Limiter) middleware.MiddleWare {
+// Option is ratelimit option.
+type Option func(*options)
+
+type options struct {
+	limit ratelimit.Limiter
+}
+
+// set a rate limit method,It must be carried out
+func WithLimit(limit ratelimit.Limiter) Option {
+	return func(o *options) {
+		o.limit = limit
+	}
+}
+
+// NewRateLimitMiddleware is a RateLimit middleware for server
+func NewRateLimitMiddleware(opts ...Option) middleware.MiddleWare {
+	options := options{}
+	for _, o := range opts {
+		o(&options)
+	}
+	if options.limit == nil {
+		panic("WithLimit method not be carried out")
+	}
 	return func(next middleware.MiddleWareFunc) middleware.MiddleWareFunc {
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
-			allow := l.Allow()
+			allow := options.limit.Allow()
 			if !allow {
 				err = status.Error(codes.ResourceExhausted, "rate limited")
 				return

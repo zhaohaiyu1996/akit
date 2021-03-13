@@ -8,7 +8,29 @@ import (
 	"github.com/zhaohaiyu1996/akit/middleware"
 )
 
-func NewLoadBalanceMiddleware(balancer loadBalance.LoadBalance) middleware.MiddleWare {
+// Option is load balance option.
+type Option func(*options)
+
+type options struct {
+	balancer loadBalance.LoadBalance
+}
+
+// set a load balance method,It must be carried out
+func WithLimit(balancer loadBalance.LoadBalance) Option {
+	return func(o *options) {
+		o.balancer = balancer
+	}
+}
+
+func NewLoadBalanceMiddleware(opts ...Option) middleware.MiddleWare {
+	options := options{}
+	for _, o := range opts {
+		o(&options)
+	}
+	if options.balancer == nil {
+		panic("WithLimit method not be carried out")
+	}
+
 	return func(next middleware.MiddleWareFunc) middleware.MiddleWareFunc {
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
 			//从ctx获取rpc的metadata
@@ -20,7 +42,7 @@ func NewLoadBalanceMiddleware(balancer loadBalance.LoadBalance) middleware.Middl
 			//生成loadbalance的上下文,用来过滤已经选择的节点
 			ctx = loadBalance.WithBalanceContext(ctx)
 			for {
-				rpcMeta.CurNode, err = balancer.Select(ctx, rpcMeta.AllNodes)
+				rpcMeta.CurNode, err = options.balancer.Select(ctx, rpcMeta.AllNodes)
 				if err != nil {
 					return
 				}
@@ -29,7 +51,7 @@ func NewLoadBalanceMiddleware(balancer loadBalance.LoadBalance) middleware.Middl
 				resp, err = next(ctx, req)
 				if err != nil {
 					// if connect error reset
-					if errors.Is(err,errors.NotHaveInstance) {
+					if errors.Is(err, errors.NotHaveInstance) {
 						continue
 					}
 					return

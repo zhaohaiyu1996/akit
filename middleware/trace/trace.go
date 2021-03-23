@@ -34,8 +34,8 @@ func WithTagId(traceID string) Option {
 	}
 }
 
-// TraceServer is a new server middleware for OpenTracing.
-func TraceServer(opts ...Option) middleware.MiddleWare {
+// NewTraceServer is a new server middleware for OpenTracing.
+func NewTraceServer(opts ...Option) middleware.MiddleWare {
 	options := options{
 		tracer: opentracing.GlobalTracer(),
 	}
@@ -79,8 +79,8 @@ func TraceServer(opts ...Option) middleware.MiddleWare {
 	}
 }
 
-// TraceClient is a new server middleware for OpenTracing.
-func TraceClient(opts ...Option) middleware.MiddleWare {
+// NewTraceClient is a new server middleware for OpenTracing.
+func NewTraceClient(opts ...Option) middleware.MiddleWare {
 	options := options{
 		tracer: opentracing.GlobalTracer(),
 	}

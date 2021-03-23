@@ -4,8 +4,6 @@ import (
 	"fmt"
 )
 
-var nop Logger = new(nopLogger)
-
 // Helper is a logger helper.
 type Helper struct {
 	debug Logger
@@ -36,8 +34,8 @@ func (h *Helper) Debugf(format string, a ...interface{}) {
 }
 
 // Debugw logs a message at debug level.
-func (h *Helper) Debugw(kvpair ...interface{}) {
-	h.debug.Print(kvpair...)
+func (h *Helper) Debugw(pairs ...interface{}) {
+	h.debug.Print(pairs...)
 }
 
 // Info logs a message at info level.
@@ -51,8 +49,8 @@ func (h *Helper) Infof(format string, a ...interface{}) {
 }
 
 // Infow logs a message at info level.
-func (h *Helper) Infow(kvpair ...interface{}) {
-	h.info.Print(kvpair...)
+func (h *Helper) Infow(pairs ...interface{}) {
+	h.info.Print(pairs...)
 }
 
 // Warn logs a message at warn level.
@@ -66,8 +64,8 @@ func (h *Helper) Warnf(format string, a ...interface{}) {
 }
 
 // Warnw logs a message at warnf level.
-func (h *Helper) Warnw(kvpair ...interface{}) {
-	h.warn.Print(kvpair...)
+func (h *Helper) Warnw(pairs ...interface{}) {
+	h.warn.Print(pairs...)
 }
 
 // Error logs a message at error level.
@@ -81,6 +79,6 @@ func (h *Helper) Errorf(format string, a ...interface{}) {
 }
 
 // Errorw logs a message at error level.
-func (h *Helper) Errorw(kvpair ...interface{}) {
-	h.err.Print(kvpair...)
+func (h *Helper) Errorw(pairs ...interface{}) {
+	h.err.Print(pairs...)
 }

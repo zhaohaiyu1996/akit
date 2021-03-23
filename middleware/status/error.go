@@ -29,8 +29,8 @@ func WithHandler(handler errorConvert) Option {
 	}
 }
 
-// Server is a server error middleware
-func Server(opts ...Option) middleware.MiddleWare {
+// NewServerError is a server error middleware
+func NewServerError(opts ...Option) middleware.MiddleWare {
 	options := options{
 		handler: errorEncode,
 	}
@@ -48,8 +48,8 @@ func Server(opts ...Option) middleware.MiddleWare {
 	}
 }
 
-// Client is a client error middleware
-func Client(opts ...Option) middleware.MiddleWare {
+// NewClientError is a client error middleware
+func NewClientError(opts ...Option) middleware.MiddleWare {
 	options := options{
 		handler: errorDecode,
 	}

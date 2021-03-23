@@ -33,8 +33,8 @@ func WithLogger(logger log.Logger) Option {
 	}
 }
 
-// Recovery is a server middleware that recovers from any panics.
-func Recovery(opts ...Option) middleware.MiddleWare {
+// NewRecovery is a server middleware that recovers from any panics.
+func NewRecovery(opts ...Option) middleware.MiddleWare {
 	options := options{
 		logger: log.DefaultLogger,
 		handler: func(ctx context.Context, req, err interface{}) error {

@@ -22,31 +22,31 @@ type engineOptions struct {
 }
 
 // ID with service id.
-func ID(id string) Option {
+func WithID(id string) Option {
 	return func(o *engineOptions) { o.id = id }
 }
 
 // Name with service name.
-func Name(name string) Option {
+func WithName(name string) Option {
 	return func(o *engineOptions) { o.name = name }
 }
 
 // Version with service version.
-func Version(version string) Option {
+func WithVersion(version string) Option {
 	return func(o *engineOptions) { o.version = version }
 }
 
 // Context with service context.
-func Context(ctx context.Context) Option {
+func WithContext(ctx context.Context) Option {
 	return func(o *engineOptions) { o.ctx = ctx }
 }
 
 // Signal with exit signals.
-func Signal(sigs ...os.Signal) Option {
+func WithSignal(sigs ...os.Signal) Option {
 	return func(o *engineOptions) { o.sigs = sigs }
 }
 
 // Server with transport servers.
-func Server(srv ...transport.Server) Option {
+func WithServer(srv ...transport.Server) Option {
 	return func(o *engineOptions) { o.servers = srv }
 }

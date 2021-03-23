@@ -4,23 +4,25 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/zhaohaiyu1996/akit/transport/arpc"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 type Engine struct {
-	opts     engineOptions
-	ctx      context.Context
-	cancel   func()
+	opts   engineOptions
+	ctx    context.Context
+	cancel func()
 }
 
 // New create an Engine manager.
 func New(opts ...Option) *Engine {
 	options := engineOptions{
-		ctx:    context.Background(),
-		sigs:   []os.Signal{syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT},
+		ctx:  context.Background(),
+		sigs: []os.Signal{syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT},
 	}
 	if id, err := uuid.NewUUID(); err == nil {
 		options.id = id.String()
@@ -30,12 +32,13 @@ func New(opts ...Option) *Engine {
 	}
 	ctx, cancel := context.WithCancel(options.ctx)
 	return &Engine{
-		opts:     options,
-		ctx:      ctx,
-		cancel:   cancel,
+		opts:   options,
+		ctx:    ctx,
+		cancel: cancel,
 	}
 }
 
+// Run is run an engine and work
 func (e *Engine) Run() error {
 	g, ctx := errgroup.WithContext(e.ctx)
 	for _, srv := range e.opts.servers {
@@ -74,4 +77,9 @@ func (e *Engine) Stop() error {
 		e.cancel()
 	}
 	return nil
+}
+
+// NewClientConnect is create a client connect
+func NewClientConnect(ctx context.Context, insecure bool, opts ...arpc.ClientOption) (*grpc.ClientConn, error) {
+	return arpc.Dial(ctx, insecure, opts...)
 }

@@ -17,15 +17,28 @@ type Server struct {
 	network string
 }
 
+func WithAddress(address string) ServerOption {
+	return func(s *Server) {
+		s.address = address
+	}
+}
+
+func WithNetwork(network string) ServerOption {
+	return func(s *Server) {
+		s.network = network
+	}
+}
+
 func NewServer(opts ...ServerOption) *Server {
 	var server = &Server{
-		address: ":tcp",
-		network: ":9426",
+		address: ":9426",
+		network: "tcp",
 	}
 	for _, o := range opts {
 		o(server)
 	}
 
+	server.Server = grpc.NewServer()
 	return server
 }
 
@@ -36,7 +49,8 @@ func (s *Server) Start() error {
 		return err
 	}
 	s.lis = lis
-	return nil
+	fmt.Println("start at ",s.address)
+	return s.Serve(s.lis)
 }
 
 // Stop is Stop Grpc server

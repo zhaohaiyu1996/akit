@@ -1,7 +1,7 @@
 package status
 
 import (
-	"github.com/zhaohaiyu1996/akit/errors"
+	"github.com/zhaohaiyu1996/akit/aerrors"
 	"log"
 	"testing"
 )

@@ -67,7 +67,7 @@ func NewTraceServer(opts ...Option) middleware.MiddleWare {
 			serverSpan.SetTag(options.traceID, trace.GetTraceId(ctx))
 			ctx = opentracing.ContextWithSpan(ctx, serverSpan)
 			resp, err = next(ctx, req)
-			// if have errors record it
+			// if have aerrors record it
 			if err != nil {
 				ext.Error.Set(serverSpan, true)
 				serverSpan.LogFields(traceLog.String("event", "error"), traceLog.String("message", err.Error()))
@@ -120,7 +120,7 @@ func NewTraceClient(opts ...Option) middleware.MiddleWare {
 			ctx = opentracing.ContextWithSpan(ctx, clientSpan)
 
 			resp, err = next(ctx, req)
-			// if have errors record it
+			// if have aerrors record it
 			if err != nil {
 				ext.Error.Set(clientSpan, true)
 				clientSpan.LogFields(traceLog.String("event", "error"), traceLog.String("message", err.Error()))

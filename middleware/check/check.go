@@ -3,7 +3,7 @@ package check
 import (
 	"context"
 	"github.com/zhaohaiyu1996/akit/check"
-	"github.com/zhaohaiyu1996/akit/errors"
+	"github.com/zhaohaiyu1996/akit/aerrors"
 	"github.com/zhaohaiyu1996/akit/middleware"
 )
 

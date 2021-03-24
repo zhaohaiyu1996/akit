@@ -2,7 +2,7 @@ package recovery
 
 import (
 	"context"
-	"github.com/zhaohaiyu1996/akit/errors"
+	"github.com/zhaohaiyu1996/akit/aerrors"
 	"github.com/zhaohaiyu1996/akit/log"
 	"github.com/zhaohaiyu1996/akit/middleware"
 	"runtime"
@@ -38,7 +38,7 @@ func NewRecovery(opts ...Option) middleware.MiddleWare {
 	options := options{
 		logger: log.DefaultLogger,
 		handler: func(ctx context.Context, req, err interface{}) error {
-			return errors.ErrorByMessage(errors.Uncertain, "panic triggered: %v", err)
+			return aerrors.ErrorByMessage(aerrors.Uncertain, "panic triggered: %v", err)
 		},
 	}
 	for _, o := range opts {

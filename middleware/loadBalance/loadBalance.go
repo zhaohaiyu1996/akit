@@ -2,7 +2,7 @@ package loadBalance
 
 import (
 	"context"
-	"github.com/zhaohaiyu1996/akit/errors"
+	"github.com/zhaohaiyu1996/akit/aerrors"
 	"github.com/zhaohaiyu1996/akit/loadBalance"
 	"github.com/zhaohaiyu1996/akit/meta"
 	"github.com/zhaohaiyu1996/akit/middleware"
@@ -36,7 +36,7 @@ func NewLoadBalanceMiddleware(opts ...Option) middleware.MiddleWare {
 			//从ctx获取rpc的metadata
 			rpcMeta := meta.GetRpcMeta(ctx)
 			if len(rpcMeta.AllNodes) == 0 {
-				err = errors.ErrorByMessage(errors.NotHaveInstance, "grpc meta not have a instance caller: %s service: %s", rpcMeta.Caller, rpcMeta.ServiceName)
+				err = aerrors.ErrorByMessage(aerrors.NotHaveInstance, "grpc meta not have a instance caller: %s service: %s", rpcMeta.Caller, rpcMeta.ServiceName)
 				return
 			}
 			//生成loadbalance的上下文,用来过滤已经选择的节点
@@ -51,7 +51,7 @@ func NewLoadBalanceMiddleware(opts ...Option) middleware.MiddleWare {
 				resp, err = next(ctx, req)
 				if err != nil {
 					// if connect error reset
-					if errors.Is(err, errors.NotHaveInstance) {
+					if aerrors.Is(err, aerrors.NotHaveInstance) {
 						continue
 					}
 					return

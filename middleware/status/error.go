@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
-	"github.com/zhaohaiyu1996/akit/errors"
+	"github.com/zhaohaiyu1996/akit/aerrors"
 	"github.com/zhaohaiyu1996/akit/middleware"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
@@ -70,7 +70,7 @@ func NewClientError(opts ...Option) middleware.MiddleWare {
 // errorDecode is grpc error convert to error interface
 func errorDecode(err error) error {
 	gs := status.Convert(err)
-	se := &errors.StatusError{
+	se := &aerrors.StatusError{
 		Code:    int32(gs.Code()),
 		Details: gs.Proto().Details,
 	}
@@ -87,9 +87,9 @@ func errorDecode(err error) error {
 
 // errorEncode is error interface convert to grpc error
 func errorEncode(err error) error {
-	se, ok := errors.FromError(err)
+	se, ok := aerrors.FromError(err)
 	if !ok {
-		se = &errors.StatusError{
+		se = &aerrors.StatusError{
 			Code: 2,
 		}
 	}

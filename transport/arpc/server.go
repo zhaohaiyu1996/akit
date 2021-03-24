@@ -102,7 +102,7 @@ func NewServer(opts ...ServerOption) *Server {
 	}
 
 	server.Server = grpc.NewServer(grpcOpts...)
-	server.log.Info("a rpc server is starting at %s", server.address)
+	server.log.Info("a rpc server is starting at ", server.address)
 	return server
 }
 

@@ -1,4 +1,4 @@
-package errors
+package aerrors
 
 var NotDefault = &StatusError{
 	Code:    404,

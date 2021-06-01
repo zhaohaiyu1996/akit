@@ -3,7 +3,7 @@ package recovery
 import (
 	"context"
 	"github.com/zhaohaiyu1996/akit/aerrors"
-	"github.com/zhaohaiyu1996/akit/log"
+	"github.com/zhaohaiyu1996/akit/alog"
 	"github.com/zhaohaiyu1996/akit/middleware"
 	"runtime"
 )
@@ -36,7 +36,7 @@ func WithLogger(logger log.Logger) Option {
 // NewRecovery is a server middleware that recovers from any panics.
 func NewRecovery(opts ...Option) middleware.MiddleWare {
 	options := options{
-		logger: log.DefaultLogger,
+		logger: alog.DefaultLogger,
 		handler: func(ctx context.Context, req, err interface{}) error {
 			return aerrors.ErrorByMessage(aerrors.Uncertain, "panic triggered: %v", err)
 		},
@@ -44,7 +44,7 @@ func NewRecovery(opts ...Option) middleware.MiddleWare {
 	for _, o := range opts {
 		o(&options)
 	}
-	log := log.NewHelper("middleware/recovery", log.DefaultLogger)
+
 	return func(handler middleware.MiddleWareFunc) middleware.MiddleWareFunc {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			defer func() {

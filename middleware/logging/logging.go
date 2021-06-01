@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"github.com/zhaohaiyu1996/akit/log"
+	"github.com/zhaohaiyu1996/akit/alog"
 	"github.com/zhaohaiyu1996/akit/meta"
 	"github.com/zhaohaiyu1996/akit/middleware"
 	"time"

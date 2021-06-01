@@ -2,51 +2,45 @@ package akit
 
 import (
 	"context"
-	"github.com/zhaohaiyu1996/akit/transport"
+	"github.com/zhaohaiyu1996/akit/registry"
+	"github.com/zhaohaiyu1996/akit/servers"
 	"os"
 )
 
 // Option is an engineOptions option.
-type Option func(o *engineOptions)
+type Option func(o *Engine)
 
-// engineOptions is an engine options
-type engineOptions struct {
-	id      string
-	name    string
-	version string
-
-	ctx  context.Context
-	sigs []os.Signal
-
-	servers []transport.Server
-}
-
-// ID with service id.
+// WithID ID with service id.
 func WithID(id string) Option {
-	return func(o *engineOptions) { o.id = id }
+	return func(o *Engine) { o.id = id }
 }
 
-// Name with service name.
+// WithName Name with service name.
 func WithName(name string) Option {
-	return func(o *engineOptions) { o.name = name }
+	return func(o *Engine) { o.name = name }
 }
 
-// Version with service version.
+// WithVersion Version with service version.
 func WithVersion(version string) Option {
-	return func(o *engineOptions) { o.version = version }
+	return func(o *Engine) { o.version = version }
 }
 
-// Context with service context.
+// WithContext Context with service context.
 func WithContext(ctx context.Context) Option {
-	return func(o *engineOptions) { o.ctx = ctx }
+	return func(o *Engine) { o.ctx = ctx }
 }
 
-// Signal with exit signals.
+// WithSignal Signal with exit signals.
 func WithSignal(sigs ...os.Signal) Option {
-	return func(o *engineOptions) { o.sigs = sigs }
+	return func(o *Engine) { o.sigs = sigs }
 }
 
-// Server with transport servers.
-func WithServer(srv ...transport.Server) Option {
-	return func(o *engineOptions) { o.servers = srv }
+// WithServer Server with servers servers.
+func WithServer(srv ...servers.Server) Option {
+	return func(o *Engine) { o.servers = srv }
+}
+
+// WithRegistrar is with registrar
+func WithRegistrar(registrar registry.Registrar) Option {
+	return func(o *Engine) { o.Registrar = registrar }
 }

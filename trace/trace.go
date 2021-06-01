@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-
 const (
 	binHdrSuffix = "-bin"
 )
@@ -55,7 +54,7 @@ func encodeKeyValue(k, v string) (string, string) {
 /*
 func InitTrace(serviceName, reportAddr, sampleType string, rate float64) (err error) {
 
-	transport, err := zipkin.NewHTTPTransport(
+	servers, err := zipkin.NewHTTPTransport(
 		reportAddr,
 		zipkin.HTTPBatchSize(16),
 		zipkin.HTTPLogger(jaeger.StdLogger),
@@ -75,7 +74,7 @@ func InitTrace(serviceName, reportAddr, sampleType string, rate float64) (err er
 		},
 	}
 
-	r := jaeger.NewRemoteReporter(transport)
+	r := jaeger.NewRemoteReporter(servers)
 	tracer, closer, err := cfg.New(serviceName,
 		config.Logger(jaeger.StdLogger),
 		config.Reporter(r))

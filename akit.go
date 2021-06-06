@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/zhaohaiyu1996/akit/registry"
 	"github.com/zhaohaiyu1996/akit/servers"
-	"github.com/zhaohaiyu1996/akit/servers/arpc"
+	"github.com/zhaohaiyu1996/akit/servers/grpcx"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"os"
@@ -96,6 +96,6 @@ func (e *Engine) Stop() error {
 }
 
 // NewClientConnect is create a client connect
-func NewClientConnect(ctx context.Context, insecure bool, opts ...arpc.ClientOption) (*grpc.ClientConn, error) {
-	return arpc.Dial(ctx, insecure, opts...)
+func NewClientConnect(ctx context.Context, insecure bool, opts ...grpcx.ClientOption) (*grpc.ClientConn, error) {
+	return grpcx.Dial(ctx, insecure, opts...)
 }

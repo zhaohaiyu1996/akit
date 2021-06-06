@@ -41,7 +41,7 @@ func (m MetadataTextMap) ForeachKey(callback func(key, val string) error) error 
 }
 
 // encodeKeyValue encodes key and value qualified for transmission via gRPC.
-// note: copy pasted from private values of grpc.metadata
+// note: copy pasted from private values of grpcx.metadata
 func encodeKeyValue(k, v string) (string, string) {
 	k = strings.ToLower(k)
 	if strings.HasSuffix(k, binHdrSuffix) {

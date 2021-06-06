@@ -1,13 +1,11 @@
-package arpc
+package grpcx
 
 import (
 	"context"
 	"github.com/zhaohaiyu1996/akit/middleware"
-	"github.com/zhaohaiyu1996/akit/middleware/recovery"
-	"github.com/zhaohaiyu1996/akit/middleware/status"
 	"github.com/zhaohaiyu1996/akit/registry"
 	"github.com/zhaohaiyu1996/akit/servers"
-	"github.com/zhaohaiyu1996/akit/servers/arpc/resolver"
+	"github.com/zhaohaiyu1996/akit/servers/grpcx/resolver"
 	"google.golang.org/grpc"
 	"time"
 )
@@ -35,8 +33,8 @@ func WithClientTimeout(timeout time.Duration) ClientOption {
 }
 
 // WithClientMiddleware is set client's middleware
-func WithClientMiddleware(middleware middleware.MiddleWare) ClientOption {
-	return func(o *Clint) { o.middleware = middleware }
+func WithClientMiddleware(middlewares ...middleware.MiddleWare) ClientOption {
+	return func(o *Clint) { o.middleware = middleware.Chain(middlewares...) }
 }
 
 // WithClientGrpcOpts is set client's grpcOpts
@@ -53,10 +51,7 @@ func WithDiscovery(discovery registry.Discovery) ClientOption {
 func Dial(ctx context.Context, insecure bool, opts ...ClientOption) (*grpc.ClientConn, error) {
 	options := Clint{
 		timeout: 500 * time.Millisecond,
-		middleware: middleware.Chain(
-			recovery.NewRecovery(),
-			status.NewClientError(),
-		),
+		middleware: middleware.Chain(),
 	}
 	for _, o := range opts {
 		o(&options)

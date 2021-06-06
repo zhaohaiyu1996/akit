@@ -1,4 +1,4 @@
-package arpc
+package grpcx
 
 import "context"
 

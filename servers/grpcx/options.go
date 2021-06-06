@@ -1,9 +1,9 @@
-package arpc
+package grpcx
 
 import (
-	"github.com/zhaohaiyu1996/akit/middleware"
+	"github.com/zhaohaiyu1996/akit/log"
+	mw "github.com/zhaohaiyu1996/akit/middleware"
 	"google.golang.org/grpc"
-	"log"
 	"time"
 )
 
@@ -23,7 +23,7 @@ func WithNetwork(network string) ServerOption {
 	}
 }
 
-// WithLog is set server's alog
+// WithLog is set server's log
 func WithLog(log *log.Logger) ServerOption {
 	return func(s *Server) {
 		s.log = log
@@ -38,9 +38,9 @@ func WithTimeout(timeout time.Duration) ServerOption {
 }
 
 // WithMiddleware is set server's middleware
-func WithMiddleware(middleware middleware.MiddleWare) ServerOption {
+func WithMiddleware(middlewares ...mw.MiddleWare) ServerOption {
 	return func(s *Server) {
-		s.middleware = middleware
+		s.middleware = mw.Chain(middlewares...)
 	}
 }
 

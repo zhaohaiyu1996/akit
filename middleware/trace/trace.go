@@ -5,7 +5,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	traceLog "github.com/opentracing/opentracing-go/log"
-	"github.com/zhaohaiyu1996/akit/meta"
+	//"github.com/zhaohaiyu1996/akit/meta"
 	"github.com/zhaohaiyu1996/akit/middleware"
 	"github.com/zhaohaiyu1996/akit/trace"
 	"google.golang.org/grpc/metadata"
@@ -44,7 +44,7 @@ func NewTraceServer(opts ...Option) middleware.MiddleWare {
 	}
 	return func(next middleware.MiddleWareFunc) middleware.MiddleWareFunc {
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
-			// get grpc's metadata from context
+			// get grpcx's metadata from context
 			md, ok := metadata.FromIncomingContext(ctx)
 			if !ok {
 				// if not have make it
@@ -67,7 +67,7 @@ func NewTraceServer(opts ...Option) middleware.MiddleWare {
 			serverSpan.SetTag(options.traceID, trace.GetTraceId(ctx))
 			ctx = opentracing.ContextWithSpan(ctx, serverSpan)
 			resp, err = next(ctx, req)
-			// if have aerrors record it
+			// if have errors record it
 			if err != nil {
 				ext.Error.Set(serverSpan, true)
 				serverSpan.LogFields(traceLog.String("event", "error"), traceLog.String("message", err.Error()))
@@ -120,7 +120,7 @@ func NewTraceClient(opts ...Option) middleware.MiddleWare {
 			ctx = opentracing.ContextWithSpan(ctx, clientSpan)
 
 			resp, err = next(ctx, req)
-			// if have aerrors record it
+			// if have errors record it
 			if err != nil {
 				ext.Error.Set(clientSpan, true)
 				clientSpan.LogFields(traceLog.String("event", "error"), traceLog.String("message", err.Error()))

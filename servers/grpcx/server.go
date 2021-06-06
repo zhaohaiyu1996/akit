@@ -1,31 +1,29 @@
-package arpc
+package grpcx
 
 import (
 	"context"
 	"fmt"
-	"github.com/zhaohaiyu1996/akit/alog"
 	"github.com/zhaohaiyu1996/akit/internal/host"
+	"github.com/zhaohaiyu1996/akit/log"
 	"github.com/zhaohaiyu1996/akit/middleware"
-	"github.com/zhaohaiyu1996/akit/middleware/recovery"
-	"github.com/zhaohaiyu1996/akit/middleware/status"
 	"github.com/zhaohaiyu1996/akit/servers"
 	"google.golang.org/grpc"
 	"net"
 	"time"
 )
 
-const loggerName = "arpc"
+const loggerName = "grpcx"
 
 // check *Server is realized by servers.Server
 var _ servers.Server = (*Server)(nil)
 
-// Server is a grpc server wrapper
+// Server is a grpcx server wrapper
 type Server struct {
 	*grpc.Server
 	lis        net.Listener
 	address    string
 	network    string
-	log        *alog.Logger
+	log        *log.Logger
 	timeout    time.Duration
 	middleware middleware.MiddleWare
 	grpcOpts   []grpc.ServerOption
@@ -34,14 +32,11 @@ type Server struct {
 // NewServer is create a rpc Server
 func NewServer(fn func(grpcServer *Server), opts ...ServerOption) *Server {
 	var server = &Server{
-		address: ":9426",
-		network: "tcp",
-		log:     alog.DefaultLogger,
-		timeout: time.Millisecond * 500,
-		middleware: middleware.Chain(
-			recovery.NewRecovery(),
-			status.NewServerError(),
-		),
+		address:    ":9426",
+		network:    "tcp",
+		log:        log.DefaultLogger,
+		timeout:    time.Millisecond * 500,
+		middleware: middleware.Chain(),
 	}
 	for _, o := range opts {
 		o(server)
@@ -82,13 +77,13 @@ func (s *Server) Stop() error {
 }
 
 // Endpoint return a real address to registry endpoint.
-// examples: grpc://127.0.0.1:9000?isSecure=false
+// examples: grpcx://127.0.0.1:9000?isSecure=false
 func (s *Server) Endpoint() (string, error) {
 	addr, err := host.Extract(s.address, s.lis)
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("grpc://%s", addr), nil
+	return fmt.Sprintf("grpcx://%s", addr), nil
 }
 
 func unaryServerInterceptor(m middleware.MiddleWare, timeout time.Duration) grpc.UnaryServerInterceptor {

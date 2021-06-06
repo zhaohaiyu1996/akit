@@ -2,7 +2,7 @@ package resolver
 
 import (
 	"context"
-	"github.com/zhaohaiyu1996/akit/alog"
+	"github.com/zhaohaiyu1996/akit/log"
 	"github.com/zhaohaiyu1996/akit/registry"
 	"google.golang.org/grpc/resolver"
 )
@@ -13,7 +13,7 @@ const name = "discovery"
 type Option func(o *builder)
 
 // WithLogger with builder logger.
-func WithLogger(logger log.Logger) Option {
+func WithLogger(logger *log.Logger) Option {
 	return func(o *builder) {
 		o.logger = logger
 	}
@@ -21,7 +21,7 @@ func WithLogger(logger log.Logger) Option {
 
 type builder struct {
 	discoverer registry.Discovery
-	logger     log.Logger
+	logger     *log.Logger
 }
 
 // NewBuilder creates a builder which is used to factory registry resolvers.
@@ -45,10 +45,11 @@ func (d *builder) Build(target resolver.Target, cc resolver.ClientConn, opts res
 	r := &discoveryResolver{
 		w:      w,
 		cc:     cc,
-		log:    log.NewHelper("grpc/resolver/discovery", d.logger),
+		log:    d.logger,
 		ctx:    ctx,
 		cancel: cancel,
 	}
+	r.log.WithStr("type", "grpcx/resolver/discovery")
 	go r.watch()
 	return r, nil
 }

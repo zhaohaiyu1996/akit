@@ -2,7 +2,7 @@ package resolver
 
 import (
 	"context"
-	"github.com/zhaohaiyu1996/akit/alog"
+	"github.com/zhaohaiyu1996/akit/log"
 	"github.com/zhaohaiyu1996/akit/registry"
 	"google.golang.org/grpc/attributes"
 	"google.golang.org/grpc/resolver"
@@ -13,7 +13,7 @@ import (
 type discoveryResolver struct {
 	w   registry.Watcher
 	cc  resolver.ClientConn
-	log *log.Helper
+	log *log.Logger
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -71,7 +71,7 @@ func parseEndpoint(endpoints []string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if u.Scheme == "grpc" {
+		if u.Scheme == "grpcx" {
 			return u.Host, nil
 		}
 	}

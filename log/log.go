@@ -1,68 +1,99 @@
 package log
 
 import (
-	"log"
+	"context"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog"
+	"google.golang.org/grpc/metadata"
+	"os"
 )
 
-var (
-	// DefaultLogger is default logger.
-	DefaultLogger Logger = NewStdLogger(log.Writer())
-)
+var DefaultLogger = &Logger{zerolog.New(os.Stderr).With().CallerWithSkipFrameCount(3).Logger(), context.Background()}
 
-// Logger is a logger interface.
-type Logger interface {
-	Print(pairs ...interface{})
+type Logger struct {
+	zerolog.Logger
+	ctx context.Context
 }
 
-type context struct {
-	logs   []Logger
-	prefix []interface{}
-}
+func NewLogger(opts ...LogOption) *Logger {
+	l := DefaultLogger
 
-func (c *context) Print(a ...interface{}) {
-	kvs := make([]interface{}, 0, len(c.prefix)+len(a))
-	kvs = append(kvs, c.prefix...)
-	kvs = append(kvs, a...)
-	for _, log := range c.logs {
-		log.Print(kvs...)
+	for _, opt := range opts {
+		opt(l)
 	}
+
+	return l
 }
 
-// With with logger fields.
-func With(l Logger, a ...interface{}) Logger {
-	if c, ok := l.(*context); ok {
-		kvs := make([]interface{}, 0, len(c.prefix)+len(a))
-		kvs = append(kvs, a...)
-		kvs = append(kvs, c.prefix...)
-		return &context{
-			logs:   c.logs,
-			prefix: kvs,
+func NewContextLogger(ctx context.Context, ops ...LogOption) (*Logger, context.Context) {
+	var logger = NewLogger(ops...)
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		if id, err := uuid.NewUUID(); err == nil {
+			logger = logger.Trace(id.String())
+			md := metadata.Pairs("trace_id", id.String())
+			ctx = metadata.NewOutgoingContext(ctx, md)
 		}
+		return logger, ctx
 	}
-	return &context{logs: []Logger{l}, prefix: a}
+
+	traceIds, ok := md["trace_id"]
+	if !ok || len(traceIds) == 0 {
+		if id, err := uuid.NewUUID(); err == nil {
+			logger = logger.Trace(id.String())
+			ctx = metadata.AppendToOutgoingContext(ctx, "trace_id", id.String())
+		}
+		return logger, ctx
+	}
+	logger = logger.Trace(traceIds[0])
+
+	return logger, ctx
 }
 
-// Wrap wraps multi logger.
-func Wraps(logs ...Logger) Logger {
-	return &context{logs: logs}
+func (l *Logger) Trace(traceId string) *Logger {
+	return &Logger{l.With().Str("trace_id", traceId).Logger(), l.ctx}
 }
 
-// Debug returns a debug logger.
-func Debug(log Logger) Logger {
-	return With(log, LevelKey, LevelDebug)
+func (l *Logger) Name(name string) Logger {
+	return Logger{l.With().Str("name", name).Logger(), l.ctx}
 }
 
-// Info returns a info logger.
-func Info(log Logger) Logger {
-	return With(log, LevelKey, LevelInfo)
+func (l *Logger) WithStr(key, value string) Logger {
+	return Logger{l.With().Str(key, value).Logger(), l.ctx}
 }
 
-// Warn return a warn logger.
-func Warn(log Logger) Logger {
-	return With(log, LevelKey, LevelWarn)
+//func (l *Logger) StrLogger(key, value string) *Logger {
+//	return &Logger{l.With().Str(key, value).Logger()}
+//}
+
+func (l *Logger) Debug(msg string) {
+	l.Logger.Debug().Msg(msg)
 }
 
-// Error returns a error logger.
-func Error(log Logger) Logger {
-	return With(log, LevelKey, LevelError)
+func (l *Logger) Debugf(format string, v ...interface{}) {
+	l.Logger.Debug().Msgf(format, v...)
+}
+
+func (l *Logger) Info(msg string) {
+	l.Logger.Info().Msg(msg)
+}
+
+func (l *Logger) Infof(format string, v ...interface{}) {
+	l.Logger.Info().Msgf(format, v...)
+}
+
+func (l *Logger) Warn(msg string) {
+	l.Logger.Warn().Msg(msg)
+}
+
+func (l *Logger) Warnf(format string, v ...interface{}) {
+	l.Logger.Warn().Msgf(format, v...)
+}
+
+func (l *Logger) Error(msg string) {
+	l.Logger.Error().Msg(msg)
+}
+
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	l.Logger.Error().Msgf(format, v...)
 }

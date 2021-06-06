@@ -2,23 +2,22 @@ package middleware
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"github.com/zhaohaiyu1996/akit/log"
-	"github.com/zhaohaiyu1996/akit/meta"
 	"github.com/zhaohaiyu1996/akit/middleware"
+	"github.com/zhaohaiyu1996/akit/servers"
+	"github.com/zhaohaiyu1996/akit/servers/grpcx"
 	"time"
-
-	"google.golang.org/grpc/status"
 )
 
 type Option func(*options)
 
 type options struct {
-	logger log.Logger
+	logger *log.Logger
 }
 
 // WithLogger with middleware logger.
-func WithLogger(logger log.Logger) Option {
+func WithLogger(logger *log.Logger) Option {
 	return func(o *options) {
 		o.logger = logger
 	}
@@ -31,23 +30,31 @@ func NewServerLogMiddleware(opts ...Option) middleware.MiddleWare {
 	for _, o := range opts {
 		o(&options)
 	}
-	log := log.NewHelper("middleware/logging", options.logger)
+	options.logger.WithStr("middleware", "logging")
 	return func(next middleware.MiddleWareFunc) middleware.MiddleWareFunc {
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
 			startTime := time.Now()
 			resp, err = next(ctx, req)
-			serverMeta := meta.GetServerMeta(ctx)
-			errStatus, _ := status.FromError(err)
-			cost := time.Since(startTime).Nanoseconds() / 1000
-			log.Infof("cost_us:%d", cost)
-			log.Infof("method:%s", serverMeta.Method)
-
-			log.Infof("cluster:%s", serverMeta.Cluster)
-			log.Infof("env:%s", serverMeta.Env)
-			log.Infof("server_ip:%s", serverMeta.ServerIP)
-			log.Infof("client_ip:%s", serverMeta.ClientIP)
-			log.Infof("idc:%s", serverMeta.IDC)
-			log.Infof("result=%v", errStatus.Code())
+			if sv, ok := servers.FromContext(ctx); ok {
+				switch sv.Kind {
+				case servers.KindARPC:
+					info, ok := grpcx.FromServerContext(ctx)
+					if !ok {
+						return
+					}
+					var m = map[string]interface{}{
+						"kind":     "server",
+						"protocol": "grpcx",
+						"cost_us":  time.Since(startTime).Nanoseconds() / 1000,
+						"method":   info.FullMethod,
+						"req":      req,
+					}
+					a, err := json.Marshal(m)
+					if err == nil {
+						options.logger.Info(string(a))
+					}
+				}
+			}
 
 			return
 		}
@@ -61,36 +68,35 @@ func NewClientLogMiddleware(opts ...Option) middleware.MiddleWare {
 	for _, o := range opts {
 		o(&options)
 	}
-	log := log.NewHelper("middleware/logging", options.logger)
+	options.logger.WithStr("middleware", "logging")
 	return func(next middleware.MiddleWareFunc) middleware.MiddleWareFunc {
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
 			startTime := time.Now()
 			resp, err = next(ctx, req)
 
-			rpcMeta := meta.GetRpcMeta(ctx)
-			errStatus, _ := status.FromError(err)
-
-			cost := time.Since(startTime).Nanoseconds() / 1000
-			log.Infof("cost_us", cost)
-			log.Infof("method", rpcMeta.Method)
-			log.Infof("server", rpcMeta.ServiceName)
-
-			log.Infof("caller_cluster", rpcMeta.CallerCluster)
-			log.Infof("upstream_cluster", rpcMeta.ServiceCluster)
-			log.Infof("rpc", 1)
-			log.Infof("env", rpcMeta.Env)
-
-			var upstreamInfo string
-			for _, node := range rpcMeta.HistoryNodes {
-				upstreamInfo += fmt.Sprintf("%s:%d,", node.IP, node.Port)
+			if sv, ok := servers.FromContext(ctx); ok {
+				switch sv.Kind {
+				case servers.KindARPC:
+					info, ok := grpcx.FromServerContext(ctx)
+					if !ok {
+						return
+					}
+					var m = map[string]interface{}{
+						"kind":     "client",
+						"protocol": "grpcx",
+						"cost_us":  time.Since(startTime).Nanoseconds() / 1000,
+						"method":   info.FullMethod,
+						"req":      req,
+					}
+					a, err := json.Marshal(m)
+					if err == nil {
+						options.logger.Info(string(a))
+					}
+				}
 			}
 
-			log.Infof("upstream", upstreamInfo)
-			log.Infof("caller_idc", rpcMeta.CallerIDC)
-			log.Infof("upstream_idc", rpcMeta.ServiceIDC)
-			log.Infof("result=%v", errStatus.Code())
-
 			return
+
 		}
 	}
 }

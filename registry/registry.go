@@ -2,31 +2,46 @@ package registry
 
 import "context"
 
-// service registry interface
-type Registry interface {
-	// plugins name example: etcd
-	Name() string
-	// init
-	Init(ctx context.Context, opts ...Option) (err error)
-	// service registry
-	Register(ctx context.Context, service *Service) (err error)
-	// Service anti registration
-	Unregister(ctx context.Context, service *Service) (err error)
-	// service discovery
-	GetService(ctx context.Context, name string) (service *Service, err error)
+// Registrar is a server register
+type Registrar interface {
+	// Register is register a registration
+	Register(ctx context.Context, service *ServiceInstance) error
+	// UnRegister is UnRegister a registration
+	UnRegister(ctx context.Context, service *ServiceInstance) error
 }
 
-// Service
-type Service struct {
-	Name  string  `json:"name"`
-	Nodes []*Node `json:"nodes"`
+// Discovery is service discovery.
+type Discovery interface {
+	// GetService return the service instances in memory according to the service name.
+	GetService(ctx context.Context, serviceName string) ([]*ServiceInstance, error)
+	// Watch creates a watcher according to the service name.
+	Watch(ctx context.Context, serviceName string) (Watcher, error)
 }
 
-// Node is service's node
-type Node struct {
-	Id     string `json:"id"`
-	IP     string `json:"ip"`
-	Port   int    `json:"port"`
-	Weight int    `json:"weight"`
+// Watcher is service watcher.
+type Watcher interface {
+	// Next returns services in the following two cases:
+	// 1.the first time to watch and the service instance list is not empty.
+	// 2.any service instance changes found.
+	// if the above two conditions are not met, it will block until context deadline exceeded or canceled
+	Next() ([]*ServiceInstance, error)
+	// Stop close the watcher.
+	Stop() error
 }
 
+// ServiceInstance is an instance of a service in a discovery system.
+type ServiceInstance struct {
+	// ID is the unique instance ID as registered.
+	ID string `json:"id"`
+	// Name is the service name as registered.
+	Name string `json:"name"`
+	// Version is the version of the compiled.
+	Version string `json:"version"`
+	// Metadata is the kv pair metadata associated with the service instance.
+	Metadata map[string]string `json:"metadata"`
+	// Endpoints is endpoint addresses of the service instance.
+	// schema:
+	//   http://127.0.0.1:8000?isSecure=false
+	//   grpcx://127.0.0.1:9000?isSecure=false
+	Endpoints []string `json:"endpoints"`
+}

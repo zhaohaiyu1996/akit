@@ -1,22 +1,15 @@
 package log
 
-import (
-	"os"
-	"testing"
-)
+import "testing"
 
-func TestLogger(t *testing.T) {
-	logger := DefaultLogger
-	Debug(logger).Print("log", "test debug")
-	Info(logger).Print("log", "test info")
-	Warn(logger).Print("log", "test warn")
-	Error(logger).Print("log", "test error")
+func TestLog(t *testing.T) {
+	log := NewLogger(WithLogLevel("info"))
+	log.Trace("trace_id")
+	log.Info("ZHAOHAIYU")
+	log.Errorf("zhaohaiyu:%d", 18)
 }
 
-func TestWrapper_Print(t *testing.T) {
-	out := NewStdLogger(os.Stdout)
-	err := NewStdLogger(os.Stderr)
-
-	l := Wrap(out, err)
-	l.Print("message", "test")
+func TestFileLog(t *testing.T) {
+	log := NewLogger(WithLogLevel("debug"), WithFileAndCaller("./", true))
+	log.Info("123")
 }

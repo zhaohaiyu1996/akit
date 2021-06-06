@@ -1,0 +1,12 @@
+syntax = "proto3"; 
+package akit.aerrors;
+
+option go_package = "github.com/zhaohaiyu1996/akit/errors;errors";
+
+
+message Error {
+    int32 code = 1;
+    string reason = 2;
+    string message = 3;
+    map<string, string> metadata = 4;
+};
